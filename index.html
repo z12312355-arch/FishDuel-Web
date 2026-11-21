@@ -7,31 +7,36 @@
   <title>我的魚最強</title>
   <style>
     * { box-sizing: border-box; }
-    body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); margin: 0; height: 100dvh; display: flex; flex-direction: column; background: #101f2b; color: #f2ebdd; font: 16px system-ui, sans-serif; }
-    main { flex: 1; min-height: 0; display: grid; place-items: center; position: relative; }
-    main { background: #101f2b url("./cover.webp") center / 100% 100% no-repeat; }
-    #entry { position: relative; z-index: 1; width: min(92%, clamp(350px, 28vw, 550px)); height: 94%; padding: 20px; border-radius: 12px; background: rgb(16 31 43 / 97%); overflow-y: auto; display: flex; flex-direction: column; }
-    .menu { margin: auto 0; text-align: center; }
-    h1 { margin: .12em 0 0; color: #f2ebdd; font-size: clamp(32px, min(4vw, 6vh), 64px); line-height: 1.05; }
-    h1 strong { display: block; font-size: 1.55em; color: #e8bd72; }
-    .brand { color: #b6c6d3; letter-spacing: .24em; }
-    #message { color: #b6c6d3; overflow-wrap: anywhere; }
+    body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); margin: 0; height: 100dvh; display: flex; flex-direction: column; background: #091c25; color: #f2ebdd; font: 16px system-ui, sans-serif; }
+    main { flex: 1; min-height: 0; display: grid; position: relative; }
+    #entry { position: relative; z-index: 1; min-height: 0; overflow-y: auto; background: #091c25; }
+    .poster { width: min(100%, 84dvh); aspect-ratio: 2; margin: 0 auto; background: url("./champion-8817d4c32246aa15.webp") center / contain no-repeat;
+      mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent), linear-gradient(to bottom, transparent, #000 4%, #000 87%, transparent); mask-composite: intersect; }
+    .menu { width: min(100% - 32px, 390px); margin: 0 auto; padding: 6px 0 20px; text-align: center; }
+    h1 { margin: 2px 0 0; color: #f2ebdd; font-size: clamp(32px, 5dvh, 54px); line-height: 1.17; font-weight: 900; }
+    h1 strong { color: #e8bd72; }
+    .brand { color: #74cbb6; font-size: 12px; font-weight: 650; letter-spacing: .27em; }
+    #message { margin: 10px 0; color: #b6c6d3; overflow-wrap: anywhere; }
     button { padding: .55em .9em; border: 1px solid #327d76; border-radius: 6px; background: #183d43; color: inherit; font: inherit; cursor: pointer; }
     #entry button { width: 100%; min-height: 44px; text-align: center; }
     #email-submit { background: #5fcbb1; border-color: #5fcbb1; color: #101f2b; font-weight: 650; }
-    #sign-in, #auth-mode { margin-top: 8px; }
+    #sign-in, #retry { margin-top: 8px; }
     #account-form label { text-align: start; }
     #account-form { display: grid; gap: 8px; }
     #account-form input { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid #60778a; border-radius: 6px; color: inherit; background: #101c2b; font: inherit; }
-    #entry { max-height: 96dvh; overflow-y: auto; }
     button:focus-visible { outline: 3px solid #edc66f; outline-offset: 2px; }
-    #switch-account, #forgot { display: block; margin: 8px auto 0; background: transparent; border-color: transparent; text-decoration: underline; }
+    .account-links { display: flex; justify-content: center; flex-wrap: wrap; }
+    #entry .account-links button, #switch-account { width: auto; padding-inline: 12px; background: transparent; border-color: transparent; color: #bdd6d2; text-decoration: underline; text-underline-offset: 3px; }
     #save-state { padding: 8px 16px; background: #24343d; text-align: center; }
     button:disabled { opacity: .55; }
     canvas { touch-action: none; display: block; outline: 0; position: absolute; inset: 0; width: 100%; height: 100%; }
-    @media (orientation: portrait) {
-      main { background-size: auto min(44vh, 88vw); background-position: 88% top; }
-      #entry { align-self: end; height: 72%; margin-bottom: 8px; }
+    @media (orientation: portrait) and (min-height: 650px) {
+      #entry { align-content: safe center; }
+    }
+    @media (orientation: landscape) and (max-height: 520px) {
+      #entry { display: grid; grid-template-columns: 48% 52%; }
+      .poster { width: 100%; position: sticky; top: max(0px, calc(50dvh - 12vw)); }
+      .menu { padding-top: 12px; }
     }
     [hidden] { display: none !important; }
   </style>
@@ -39,6 +44,7 @@
 <body>
   <main>
     <section id="entry">
+      <div class="poster" aria-hidden="true"></div>
       <div class="menu">
       <span class="brand" lang="en">FISH DUEL</span>
       <h1>我的魚<strong>最強</strong></h1>
@@ -50,9 +56,11 @@
         <input id="password" type="password" name="password" autocomplete="current-password" required>
         <button id="email-submit" type="submit">登入</button>
       </form>
-      <button id="forgot" hidden>忘記密碼？</button>
-      <button id="auth-mode" hidden>註冊新帳號</button>
       <button id="sign-in" hidden>使用 Google 登入</button>
+      <div class="account-links">
+        <button id="auth-mode" hidden>註冊新帳號</button>
+        <button id="forgot" hidden>忘記密碼？</button>
+      </div>
       <button id="switch-account" hidden>切換 Google 帳號</button>
       <button id="retry" hidden>重新載入</button>
     </div>
@@ -62,8 +70,8 @@
   <aside id="save-state" role="status" hidden></aside>
   <script src="index.js"></script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-357a2c5c0aa478cf.pck":12712864,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-357a2c5c0aa478cf.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-0918c404e45df69c.pck":14271844,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-0918c404e45df69c.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script type="module" src="./fishduel-cloud-57ea2018ae551ad8.js"></script>
