@@ -8,34 +8,38 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; height: 100dvh; display: flex; flex-direction: column; background: #081521; color: #e9f8ff; font: 16px system-ui, sans-serif; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; background: #102737; }
     main { flex: 1; min-height: 0; display: grid; place-items: center; position: relative; }
-    section { padding: 28px; text-align: center; }
+    #entry { position: relative; z-index: 1; max-width: 100%; padding: 28px; text-align: center; }
+    #message { color: #b7d1dc; overflow-wrap: anywhere; }
     button { padding: .55em .9em; border: 1px solid #35b5b6; border-radius: 6px; background: #173b4b; color: inherit; font: inherit; cursor: pointer; }
+    #sign-in, #start { background: #55ded1; color: #081521; font-weight: 650; }
+    #switch-account { display: block; margin: 8px auto 0; background: transparent; border-color: transparent; text-decoration: underline; }
+    #save-state { padding: 8px 16px; background: #24343d; text-align: center; }
     button:disabled { opacity: .55; }
     canvas { display: block; outline: 0; position: absolute; inset: 0; width: 100%; height: 100%; }
     [hidden] { display: none !important; }
   </style>
 </head>
 <body>
-  <header><span id="save-state" role="status"></span><button id="sign-out" hidden>登出</button></header>
   <main>
     <section id="entry">
       <h1>我的魚最強</h1>
       <p id="message" role="status">正在連接遊戲服務…</p>
       <button id="sign-in" hidden>使用 Google 登入</button>
       <button id="start" hidden>開始遊戲</button>
+      <button id="switch-account" hidden>切換 Google 帳號</button>
       <button id="retry" hidden>重新載入</button>
     </section>
     <canvas id="canvas" tabindex="0" hidden></canvas>
   </main>
+  <aside id="save-state" role="status" hidden></aside>
   <script src="index.js"></script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-13d0645104a01078.pck":12688064,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-13d0645104a01078.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-f07a99539175f172.pck":12686960,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-f07a99539175f172.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
-  <script type="module" src="./cloud.js"></script>
+  <script type="module" src="./fishduel-cloud-9ec3be41aaab940d.js"></script>
 </body>
 </html>
 
