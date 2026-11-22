@@ -11,7 +11,8 @@ async function build() {
   try {
     const binary = path.join(dir,"godot");
     await fs.writeFile(binary,await promisify(gunzip)(await fs.readFile(path.join(__dirname,"linux.gz"))),{mode:0o700});
-    const smoke = await calculate({action:"inspect",payload:"AAAAAA=="},{binary,pack:path.join(__dirname,"referee.pck")});
+    await fs.copyFile(path.join(__dirname,"referee.pck"),binary+".pck");
+    const smoke = await calculate({action:"inspect",payload:"AAAAAA=="},{binary});
     if (smoke.valid !== false) throw new Error("Unexpected referee smoke result.");
   } finally { await fs.rm(dir,{recursive:true,force:true}); }
   // Validate deployment secrets without touching any player's data. A preview

@@ -14,7 +14,8 @@ async function getRuntime() {
     const binary = path.join(folder,"godot");
     const assets = path.join(process.cwd(),"care-runtime");
     await fs.writeFile(binary, await promisify(gunzip)(await fs.readFile(path.join(assets,"linux.gz"))),{mode:0o700});
-    return {binary,pack:path.join(assets,"referee.pck")};
+    await fs.copyFile(path.join(assets,"referee.pck"),binary+".pck");
+    return {binary};
   })().catch(error => { runtime = null; throw error; });
   return runtime;
 }

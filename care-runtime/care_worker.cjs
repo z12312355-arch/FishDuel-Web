@@ -11,9 +11,8 @@ async function calculate(job, runtime = {}) {
   try {
     const input = path.join(dir, "job.json"), output = path.join(dir, "result.json");
     await fs.writeFile(input, JSON.stringify(job), {mode:0o600});
-    const projectArgs = runtime.pack ? ["--main-pack",runtime.pack] : ["--path",root];
-    await execFile(runtime.binary || process.env.GODOT_BIN, ["--headless",...projectArgs,"--log-file",path.join(dir,"engine.log"),
-      "-s","res://tools/web/care_referee.gd","--",input,output], {timeout:30000,windowsHide:true,
+    const projectArgs = runtime.binary ? [] : ["--path",root,"--log-file",path.join(dir,"engine.log"),"-s","res://tools/web/care_referee.gd"];
+    await execFile(runtime.binary || process.env.GODOT_BIN, ["--headless",...projectArgs,"--",input,output], {timeout:30000,windowsHide:true,
       env:{PATH:process.env.PATH, SystemRoot:process.env.SystemRoot, HOME:dir, APPDATA:dir, LOCALAPPDATA:dir, XDG_DATA_HOME:dir}});
     return JSON.parse(await fs.readFile(output,"utf8"));
   } finally {
