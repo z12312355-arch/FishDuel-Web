@@ -1,8 +1,8 @@
 [
-  "NotoSansTC-OFL.txt",
   "champion-8817d4c32246aa15.webp",
   "cloud-config.json",
   "fishduel-104fec2c26dd48b2.pck",
+  "fishduel-2e63171d68a453c4.pck",
   "fishduel-cloud-c41b070c831a3cd7.js",
   "fishduel-cloud-e93cb8364b98ab74.js",
   "fishduel-fe029ffb076d45e6.pck",
@@ -15,5 +15,6 @@
   "index.icon.png",
   "index.js",
   "index.png",
-  "index.wasm"
+  "index.wasm",
+  "NotoSansTC-OFL.txt"
 ]
