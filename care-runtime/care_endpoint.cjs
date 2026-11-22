@@ -4,8 +4,8 @@ const os = require("node:os");
 const path = require("node:path");
 const {gunzip} = require("node:zlib");
 const {promisify} = require("node:util");
-const {processOne, calculate} = require("./care_worker.cjs");
-const {Client} = require("pg");
+const {calculate} = require("./care_calculate.cjs");
+
 let runtime;
 
 async function getRuntime() {
@@ -23,37 +23,17 @@ async function getRuntime() {
 module.exports = async function settle(req,res) {
   res.setHeader("Cache-Control","private, no-store");
   if (req.method !== "POST") return res.status(405).end();
-  const bearer = req.headers.authorization || "";
-  if (!/^Bearer [A-Za-z0-9._-]{20,16000}$/.test(bearer)) return res.status(401).end();
-  let db;
   try {
-    const cfg = require("../cloud-config.json");
-    const response = await fetch(new URL("/auth/v1/user",cfg.url),{
-      headers:{authorization:bearer,apikey:cfg.key},signal:AbortSignal.timeout(5000),redirect:"error"
-    });
-    if (!response.ok) return res.status(response.status===401 || response.status===403 ? 401 : 503).end();
-    const user = await response.json();
-    // Supabase verified this exact bearer above. Apply the same AMR and
-    // provider restrictions as fishduel_google_access.has_google_session().
-    const claims = JSON.parse(Buffer.from(bearer.slice(7).split(".")[1],"base64url"));
-    if (claims.sub !== user.id || !/^[0-9a-f-]{36}$/i.test(user.id) ||
-        !claims.app_metadata?.providers?.includes("google") ||
-        !claims.amr?.some(item=>item.method==="oauth")) return res.status(403).end();
-    const url = new URL(process.env.CARE_DATABASE_URL);
-    if (!/^fishduel_settler(?:\.|$)/.test(url.username) || url.searchParams.get("sslmode") !== "verify-full") throw new Error("configuration");
-    db = new Client({connectionString:url.href,connectionTimeoutMillis:5000});
-    await db.connect();
-    // A player can have one opening balance, one pending match and one roster refresh.
-    for (let i=0;i<3;i++) {
-      await db.query("begin");
-      const worked = await processOne(db,async job=>calculate(job,await getRuntime()),user.id);
-      await db.query("commit");
-      if (!worked) break;
-    }
-    return res.status(204).end();
-  } catch {
-    return res.status(503).end();
-  } finally {
-    if (db) await db.end().catch(()=>{});
-  }
+    const {sign,verify} = await import("./care_signature.mjs");
+    const body = req.body;
+    if (typeof body !== "string" || body.length > 2300000) return res.status(400).end();
+    const secret = process.env.CARE_REFEREE_SECRET;
+    if (!await verify(secret,"request",body,req.headers["x-care-signature"])) return res.status(403).end();
+    const {nonce,time,job} = JSON.parse(body);
+    if (!Number.isSafeInteger(time) || Math.abs(Date.now()-time)>60000 || !["cup","inspect"].includes(job.action)) return res.status(403).end();
+    const result = await calculate(job,await getRuntime());
+    const reply = JSON.stringify({nonce,result});
+    res.setHeader("x-care-signature",await sign(secret,"result",reply));
+    return res.status(200).send(reply);
+  } catch { return res.status(503).end(); }
 };

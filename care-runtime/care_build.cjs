@@ -4,7 +4,7 @@ const path = require("node:path");
 const os = require("node:os");
 const {promisify} = require("node:util");
 const {gunzip} = require("node:zlib");
-const {calculate} = require("./care_worker.cjs");
+const {calculate} = require("./care_calculate.cjs");
 
 async function build() {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(),"fishduel-build-"));
@@ -15,20 +15,6 @@ async function build() {
     const smoke = await calculate({action:"inspect",payload:"AAAAAA=="},{binary});
     if (smoke.valid !== false) throw new Error("Unexpected referee smoke result.");
   } finally { await fs.rm(dir,{recursive:true,force:true}); }
-  // Validate deployment secrets without touching any player's data. A preview
-  // may be built before provisioning; Production must have the dedicated login.
-  if (process.env.CARE_DATABASE_URL || ["preview","production"].includes(process.env.VERCEL_ENV)) {
-    const url = new URL(process.env.CARE_DATABASE_URL);
-    if (!/^fishduel_settler(?:\.|$)/.test(url.username) || url.searchParams.get("sslmode") !== "verify-full") throw new Error("Dedicated TLS login required.");
-    const {Client} = require("pg");
-    const client = new Client({connectionString:url.href,connectionTimeoutMillis:8000});
-    try {
-      await client.connect();
-      const {rows} = await client.query("select current_user='fishduel_settler' and pg_has_role(current_user,'fishduel_care_worker','MEMBER') and not rolsuper and not rolbypassrls and not rolcreaterole and not rolcreatedb and not rolreplication and (select ssl from pg_stat_ssl where pid=pg_backend_pid()) and not exists(select 1 from pg_auth_members m join pg_roles g on g.oid=m.roleid where m.member=pg_roles.oid and g.rolname<>'fishduel_care_worker') as ok from pg_roles where rolname=current_user");
-      if (rows[0]?.ok !== true) throw new Error("Wrong settlement role.");
-      console.log("Dedicated settlement login verified.");
-    } finally { await client.end(); }
-  }
   const assets = JSON.parse(await fs.readFile(path.join(__dirname,"site-files.json"),"utf8"));
   await fs.mkdir("public",{recursive:true});
   for (const name of assets) {
