@@ -30,6 +30,9 @@
     #save-state { padding: 8px 16px; background: #24343d; text-align: center; }
     button:disabled { opacity: .55; }
     canvas { touch-action: none; display: block; outline: 0; position: absolute; inset: 0; width: 100%; height: 100%; }
+    #battle-video { position: absolute; z-index: 2; inset: auto 0 0; margin: 0 auto; width: fit-content; max-width: 100%; padding: 8px 12px; background: #101c2b; border: 1px solid #60778a; border-radius: 8px; }
+    #battle-video a { color: #f8cb83; padding: .55em; }
+    #battle-video button { min-height: 44px; }
     @media (orientation: portrait) and (min-height: 650px) {
       #entry { align-content: safe center; }
     }
@@ -66,15 +69,136 @@
     </div>
     </section>
     <canvas id="canvas" tabindex="0" hidden></canvas>
+    <div id="battle-video" hidden>
+      <span id="battle-video-status" role="status"></span>
+      <a id="battle-video-download" hidden>儲存影片</a>
+      <button id="battle-video-close" type="button">取消</button>
+    </div>
   </main>
   <aside id="save-state" role="status" hidden></aside>
   <script src="index.js"></script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-ad561984bfc647f5.pck":16816692,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-ad561984bfc647f5.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-d6303fd5a80d9bca.pck":18299972,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-d6303fd5a80d9bca.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
-  <script type="module" src="./fishduel-cloud-62b2217dda89bc77.js"></script>
+  <script>
+    (() => {
+      const canvas = document.getElementById("canvas");
+      const panel = document.getElementById("battle-video");
+      const status = document.getElementById("battle-video-status");
+      const download = document.getElementById("battle-video-download");
+      const close = document.getElementById("battle-video-close");
+      let active;
+      let downloadUrl;
+
+      function releaseDownload() {
+        if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+        downloadUrl = undefined;
+        download.removeAttribute("href");
+        download.hidden = true;
+      }
+
+      function closePanel() {
+        releaseDownload();
+        panel.hidden = true;
+        if (!canvas.hidden) canvas.focus();
+      }
+
+      function showStatus(message, label) {
+        status.textContent = message;
+        close.textContent = label;
+        panel.hidden = false;
+      }
+
+      function endSession(session) {
+        active = undefined;
+        canvas.inert = false;
+        if (session.recorder.state !== "inactive") session.recorder.stop();
+        session.stream.getTracks().forEach(track => track.stop());
+      }
+
+      function cancel(notifyGame, message) {
+        if (!active) return;
+        const session = active;
+        endSession(session);
+        if (notifyGame && !session.finished) session.onCancel();
+        if (message) showStatus(message, "關閉");
+        else closePanel();
+      }
+
+      close.addEventListener("click", () => active ? cancel(true) : closePanel());
+      panel.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          close.click();
+        }
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) cancel(true, "錄製已中止，請留在遊戲畫面再試一次。");
+      });
+
+      window.fishDuelVideo = {
+        isSupported() {
+          return typeof MediaRecorder === "function" && typeof canvas.captureStream === "function";
+        },
+        start(filename, onCancel) {
+          if (active || !this.isSupported()) return false;
+          releaseDownload();
+          let stream;
+          try {
+            stream = canvas.captureStream(30);
+            const mimeType = ["video/mp4", "video/webm;codecs=vp8", "video/webm"]
+              .find(type => MediaRecorder.isTypeSupported(type));
+            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 3500000 });
+            const session = { recorder, stream, onCancel };
+            const chunks = [];
+            recorder.addEventListener("dataavailable", event => {
+              if (event.data.size > 0) chunks.push(event.data);
+            });
+            recorder.addEventListener("error", () => {
+              if (active === session) cancel(true, "錄製失敗，請再試一次。");
+            });
+            recorder.addEventListener("stop", () => {
+              if (active !== session) return;
+              endSession(session);
+              if (!session.finished) session.onCancel();
+              if (!session.finished || chunks.length === 0) {
+                showStatus("錄製失敗，請再試一次。", "關閉");
+                return;
+              }
+              const type = recorder.mimeType || chunks[0].type;
+              downloadUrl = URL.createObjectURL(new Blob(chunks, { type }));
+              download.href = downloadUrl;
+              download.download = filename + (type.startsWith("video/mp4") ? ".mp4" : ".webm");
+              download.hidden = false;
+              showStatus("影片已準備好", "關閉");
+              download.click();
+            });
+            recorder.start(1000);
+            active = session;
+            canvas.inert = true;
+            showStatus("正在錄製完整對戰…", "取消");
+            close.focus();
+            return true;
+          } catch {
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            showStatus("這個瀏覽器無法開始錄製。", "關閉");
+            return false;
+          }
+        },
+        finish() {
+          if (!active || active.recorder.state === "inactive") return;
+          active.finished = true;
+          active.recorder.stop();
+        },
+        cancel() {
+          cancel(false);
+        }
+      };
+    })();
+  </script>
+  <script type="module" src="./fishduel-cloud-0fcf56a88d37affa.js"></script>
 </body>
 </html>
 
