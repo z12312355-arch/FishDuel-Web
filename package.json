@@ -1,0 +1,6 @@
+{
+  "name": "fishduel-care-worker",
+  "private": true,
+  "scripts": {"care-worker": "node care_worker.cjs"},
+  "dependencies": {"pg": "8.16.3"}
+}

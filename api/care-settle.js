@@ -1,0 +1,1 @@
+module.exports = require('../care-runtime/care_endpoint.cjs');
