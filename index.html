@@ -20,8 +20,8 @@
     #message { margin: 10px 0; color: #b6c6d3; overflow-wrap: anywhere; }
     button { padding: .55em .9em; border: 1px solid #327d76; border-radius: 6px; background: #183d43; color: inherit; font: inherit; cursor: pointer; }
     #entry button { width: 100%; min-height: 44px; text-align: center; }
-    #sign-in, #guest-play, #guest-import, #guest-skip, #retry, #switch-account { margin-top: 8px; }
-    #guest-play, #guest-import { background: #5fcbb1; border-color: #5fcbb1; color: #101f2b; font-weight: 650; }
+    #sign-in, #enter-game, #guest-play, #guest-import, #guest-skip, #retry, #switch-account { margin-top: 8px; }
+    #enter-game, #guest-play, #guest-import { background: #5fcbb1; border-color: #5fcbb1; color: #101f2b; font-weight: 650; }
     #sign-in:not(.secondary) { background: #5fcbb1; border-color: #5fcbb1; color: #101f2b; font-weight: 650; }
     #guest-note { margin: 12px 0 0; color: #b6c6d3; font-size: .875rem; line-height: 1.5; }
     button:focus-visible { outline: 3px solid #edc66f; outline-offset: 2px; }
@@ -45,6 +45,18 @@
     #entry-audio label { display: flex; align-items: center; gap: 12px; min-height: 48px; }
     #entry-audio input[type=range] { flex: 1; }
   </style>
+  <style>
+    #social-panel { width:min(35rem,96vw); max-height:88dvh; overflow:auto; background:#14293a; color:#f5f0e6; border:1px solid #527387; border-radius:12px; padding:16px; }
+    #social-panel::backdrop { background:#06121bc9; }
+    #social-panel header,#social-panel .row { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+    #social-panel header { justify-content:space-between; }
+    #social-panel h2,#social-panel h3 { margin:.4em 0; }
+    #social-panel section { border-top:1px solid #38546a; padding:.75em 0; }
+    #social-panel p { overflow-wrap:anywhere; }
+    #social-panel input,#social-panel select { padding:8px; font:inherit; max-width:100%; }
+    #social-panel button,#social-panel select { min-height:44px; }
+    #social-panel output { display:block; color:#ffcb90; margin:.5em 0; }
+  </style>
 </head>
 <body>
   <main>
@@ -64,6 +76,7 @@
       <span class="brand" lang="en">My Fish King</span>
       <h1>我的魚<strong>最強</strong></h1>
       <p id="message" role="status">正在連接遊戲服務…</p>
+      <button type="button" id="enter-game" hidden>進入遊戲</button>
       <button type="button" id="guest-play" aria-describedby="guest-note" hidden>立即試玩</button>
       <button type="button" id="sign-in" hidden>使用 Google 登入</button>
       <button type="button" id="guest-import" hidden>轉移試玩進度</button>
@@ -125,8 +138,8 @@
     })();
   </script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-89738c4238451056.pck":26012628,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-89738c4238451056.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-b86c02523fbb13b8.pck":26019188,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-b86c02523fbb13b8.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script>
@@ -335,7 +348,12 @@
       };
     })();
   </script>
-  <script type="module" src="./fishduel-cloud-3b49eb9a235c8fc3.js"></script>
+  <dialog id="social-panel" aria-labelledby="social-title">
+    <header><h2 id="social-title">好友</h2><button id="social-close">返回魚缸</button></header>
+    <output aria-live="polite"></output><div class="social-content"></div>
+  </dialog>
+  <script src="./fishduel-social-2fc841660d6a723c.js"></script>
+  <script type="module" src="./fishduel-cloud-a252db52447f7abe.js"></script>
 </body>
 </html>
 
