@@ -81,7 +81,7 @@
     </div>
   </main>
   <aside id="save-state" role="status" hidden></aside>
-  <script src="index.js"></script>
+  <script src="index.js?v=559bb9d59807270f"></script>
   <script>
     (() => {
       const key = "fishDuelDeviceAudio";
@@ -125,8 +125,8 @@
     })();
   </script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-d5b7b65ebc222bc5.pck":25546360,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-d5b7b65ebc222bc5.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-89738c4238451056.pck":26012628,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-89738c4238451056.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script>
@@ -138,6 +138,42 @@
       const close = document.getElementById("battle-video-close");
       let active;
       let downloadUrl;
+      let audioMix;
+
+      function audioOutput(context) {
+        if (typeof context.createMediaStreamDestination !== "function") return context.destination;
+        if (audioMix?.context !== context) {
+          audioMix = context.createGain();
+          audioMix.connect(context.destination);
+        }
+        return audioMix;
+      }
+
+      function fitRecordingCanvas() {
+        const compact = matchMedia("(pointer: coarse)").matches || (navigator.deviceMemory || 8) <= 4;
+        const longest = Math.max(canvas.width, canvas.height);
+        const shortest = Math.min(canvas.width, canvas.height);
+        const scale = Math.min(1, (compact ? 768 : 960) / longest, (compact ? 432 : 540) / shortest);
+        if (scale === 1) return;
+        // Even dimensions also work with hardware H.264 encoders.
+        canvas.width = Math.max(2, Math.floor(canvas.width * scale / 2) * 2);
+        canvas.height = Math.max(2, Math.floor(canvas.height * scale / 2) * 2);
+      }
+
+      function captureFrames(session, track) {
+        const interval = 1000 / 30;
+        let nextFrame = performance.now();
+        const capture = now => {
+          if (active !== session || session.recorder.state !== "recording") return;
+          // Allow for display refresh jitter without skipping every other frame.
+          if (now + 2 >= nextFrame) {
+            track.requestFrame();
+            nextFrame = Math.max(nextFrame + interval, now);
+          }
+          session.animation = requestAnimationFrame(capture);
+        };
+        session.animation = requestAnimationFrame(capture);
+      }
 
       function releaseDownload() {
         if (downloadUrl) URL.revokeObjectURL(downloadUrl);
@@ -160,9 +196,12 @@
 
       function endSession(session) {
         active = undefined;
+        if (session.animation !== undefined) cancelAnimationFrame(session.animation);
         canvas.inert = false;
         if (session.recorder.state !== "inactive") session.recorder.stop();
+        session.mix.disconnect(session.audio);
         session.stream.getTracks().forEach(track => track.stop());
+        canvas.dispatchEvent(new Event("fishduel-capture-ended"));
       }
 
       function cancel(notifyGame, message) {
@@ -186,19 +225,35 @@
       });
 
       window.fishDuelVideo = {
+        audioOutput,
+        isRecording: () => active !== undefined,
         isSupported() {
-          return typeof MediaRecorder === "function" && typeof canvas.captureStream === "function";
+          return typeof MediaRecorder === "function" && typeof canvas.captureStream === "function"
+            && typeof window.AudioContext !== "undefined"
+            && typeof window.AudioContext.prototype.createMediaStreamDestination === "function";
         },
         start(filename, onCancel) {
           if (active || !this.isSupported()) return false;
           releaseDownload();
+          const mix = audioMix;
+          if (!mix || mix.context.state === "closed") {
+            showStatus("遊戲音訊尚未準備好，請再試一次。", "關閉");
+            return false;
+          }
           let stream;
+          let audio;
           try {
-            stream = canvas.captureStream(30);
-            const mimeType = ["video/mp4", "video/webm;codecs=vp8", "video/webm"]
+            fitRecordingCanvas();
+            const manualFrames = typeof window.CanvasCaptureMediaStreamTrack?.prototype.requestFrame === "function";
+            stream = canvas.captureStream(manualFrames ? 0 : 30);
+            const audioDestination = mix.context.createMediaStreamDestination();
+            mix.connect(audioDestination);
+            audio = audioDestination;
+            stream.addTrack(audio.stream.getAudioTracks()[0]);
+            const mimeType = ["video/webm;codecs=vp8,opus", "video/mp4;codecs=avc1.42001f,mp4a.40.2", "video/mp4", "video/webm"]
               .find(type => MediaRecorder.isTypeSupported(type));
-            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 3500000 });
-            const session = { recorder, stream, onCancel };
+            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 3500000, audioBitsPerSecond: 128000 });
+            const session = { recorder, stream, mix, audio, onCancel };
             const chunks = [];
             recorder.addEventListener("dataavailable", event => {
               if (event.data.size > 0) chunks.push(event.data);
@@ -224,12 +279,23 @@
             });
             recorder.start(1000);
             active = session;
+            if (manualFrames) captureFrames(session, stream.getVideoTracks()[0]);
+            if (mix.context.state !== "running") {
+              mix.context.resume().catch(() => {
+                if (active === session) cancel(true, "遊戲音訊無法啟動，請再試一次。");
+              });
+            }
             canvas.inert = true;
             showStatus("正在錄製完整對戰…", "取消");
             close.focus();
             return true;
           } catch {
+            if (audio) {
+              mix.disconnect(audio);
+              audio.stream.getAudioTracks().forEach(track => track.stop());
+            }
             if (stream) stream.getTracks().forEach(track => track.stop());
+            canvas.dispatchEvent(new Event("fishduel-capture-ended"));
             showStatus("這個瀏覽器無法開始錄製。", "關閉");
             return false;
           }
@@ -245,7 +311,7 @@
       };
     })();
   </script>
-  <script type="module" src="./fishduel-cloud-335bf4f0ebe73eb0.js"></script>
+  <script type="module" src="./fishduel-cloud-3b49eb9a235c8fc3.js"></script>
 </body>
 </html>
 
