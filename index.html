@@ -20,8 +20,10 @@
     #message { margin: 10px 0; color: #b6c6d3; overflow-wrap: anywhere; }
     button { padding: .55em .9em; border: 1px solid #327d76; border-radius: 6px; background: #183d43; color: inherit; font: inherit; cursor: pointer; }
     #entry button { width: 100%; min-height: 44px; text-align: center; }
-    #sign-in { margin-top: 8px; background: #5fcbb1; border-color: #5fcbb1; color: #101f2b; font-weight: 650; }
-    #retry, #switch-account { margin-top: 8px; }
+    #sign-in, #guest-play, #guest-import, #guest-skip, #retry, #switch-account { margin-top: 8px; }
+    #guest-play, #guest-import { background: #5fcbb1; border-color: #5fcbb1; color: #101f2b; font-weight: 650; }
+    #sign-in:not(.secondary) { background: #5fcbb1; border-color: #5fcbb1; color: #101f2b; font-weight: 650; }
+    #guest-note { margin: 12px 0 0; color: #b6c6d3; font-size: .875rem; line-height: 1.5; }
     button:focus-visible { outline: 3px solid #edc66f; outline-offset: 2px; }
     #save-state { padding: 8px 16px; background: #24343d; text-align: center; }
     button:disabled { opacity: .55; }
@@ -62,7 +64,11 @@
       <span class="brand" lang="en">My Fish King</span>
       <h1>我的魚<strong>最強</strong></h1>
       <p id="message" role="status">正在連接遊戲服務…</p>
+      <button type="button" id="guest-play" aria-describedby="guest-note" hidden>立即試玩</button>
       <button type="button" id="sign-in" hidden>使用 Google 登入</button>
+      <button type="button" id="guest-import" hidden>轉移試玩進度</button>
+      <button type="button" id="guest-skip" hidden>略過轉移</button>
+      <p id="guest-note" hidden>試玩進度只存在此瀏覽器。清除瀏覽器資料可能遺失進度。</p>
       <button id="switch-account" hidden>切換 Google 帳號</button>
       <button id="retry" hidden>重新載入</button>
     </div>
@@ -119,8 +125,8 @@
     })();
   </script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-63ecb24fce840ee0.pck":25545000,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-63ecb24fce840ee0.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-272b3efb2d99e440.pck":25546152,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-272b3efb2d99e440.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script>
@@ -239,7 +245,7 @@
       };
     })();
   </script>
-  <script type="module" src="./fishduel-cloud-f38bebc4b64b3bcc.js"></script>
+  <script type="module" src="./fishduel-cloud-335bf4f0ebe73eb0.js"></script>
 </body>
 </html>
 
