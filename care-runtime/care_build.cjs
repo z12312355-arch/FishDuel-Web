@@ -35,4 +35,8 @@ async function build() {
     await fs.copyFile(name,path.join("public",name));
   }
 }
-build().catch(error=>{console.error("Settlement build failed:",error.code || error.message);process.exitCode=1;});
+build().catch(error=>{
+  console.error("Settlement build failed:",error.code || error.name);
+  if (error.cmd && error.cmd.includes("--headless")) console.error(String(error.stderr || error.stdout).slice(-3500));
+  process.exitCode=1;
+});
