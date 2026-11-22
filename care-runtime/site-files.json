@@ -1,10 +1,12 @@
 [
+  "NotoSansTC-OFL.txt",
   "champion-8817d4c32246aa15.webp",
   "cloud-config.json",
   "fishduel-104fec2c26dd48b2.pck",
   "fishduel-cloud-c41b070c831a3cd7.js",
   "fishduel-cloud-e93cb8364b98ab74.js",
   "fishduel-fe029ffb076d45e6.pck",
+  "fishduel-social-1e9e3d63b3bf45b7.js",
   "fishduel-social-90638ace44ec1f3a.js",
   "index.apple-touch-icon.png",
   "index.audio.position.worklet.js",
@@ -13,6 +15,5 @@
   "index.icon.png",
   "index.js",
   "index.png",
-  "index.wasm",
-  "NotoSansTC-OFL.txt"
+  "index.wasm"
 ]
