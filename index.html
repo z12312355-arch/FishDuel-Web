@@ -6,18 +6,22 @@
   <meta name="referrer" content="no-referrer">
   <title>我的魚最強 · My Fish King</title>
   <script>
-    // Let the browser idle between tank frames. Other scenes use native timing.
-    let lastTankFrame = -Infinity;
+    // Static match cards need fewer updates than the tank and battle animations.
+    let lastGameFrame = -Infinity;
     window.fishDuelScheduleFrame = function schedule(run, loop) {
       loop.requestAnimationFrame(function frame(time) {
-        if ((window.fishDuelTankActive || window.fishDuelCompetitionActive || window.fishDuelFishingActive) && Number.isFinite(time)) {
-          if (time - lastTankFrame < 1000 / 30 - 1) {
+        let fps = 0;
+        if (window.fishDuelBattleActive) fps = window.fishDuelBattleFps === 60 ? 60 : 30;
+        else if (window.fishDuelTankActive || window.fishDuelFishingActive) fps = 30;
+        else if (window.fishDuelCompetitionActive) fps = 20;
+        if (fps && Number.isFinite(time)) {
+          if (time - lastGameFrame < 1000 / fps - 1) {
             loop.requestAnimationFrame(frame);
             return;
           }
-          lastTankFrame = time;
+          lastGameFrame = time;
         } else {
-          lastTankFrame = -Infinity;
+          lastGameFrame = -Infinity;
         }
         run(time);
       });
@@ -159,8 +163,8 @@
     })();
   </script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-c974233e6e839164.pck":22835968,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-c974233e6e839164.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-efabbe6e30bfe7a2.pck":22836992,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-efabbe6e30bfe7a2.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script>
