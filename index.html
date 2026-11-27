@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="referrer" content="no-referrer">
   <title>我的魚最強 · My Fish King</title>
+  <script>
+    // Let the browser idle between tank frames. Other scenes use native timing.
+    let lastTankFrame = -Infinity;
+    window.fishDuelScheduleFrame = function schedule(run, loop) {
+      loop.requestAnimationFrame(function frame(time) {
+        if (window.fishDuelTankActive && Number.isFinite(time)) {
+          if (time - lastTankFrame < 1000 / 30 - 1) {
+            loop.requestAnimationFrame(frame);
+            return;
+          }
+          lastTankFrame = time;
+        } else {
+          lastTankFrame = -Infinity;
+        }
+        run(time);
+      });
+    };
+  </script>
   <style>
     * { box-sizing: border-box; }
     body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); margin: 0; height: 100dvh; display: flex; flex-direction: column; background: #091c25; color: #f2ebdd; font: 16px system-ui, sans-serif; }
@@ -97,7 +115,7 @@
     </div>
   </main>
   <aside id="save-state" role="status" hidden></aside>
-  <script src="index.js?v=559bb9d59807270f"></script>
+  <script src="index.js?v=bca316382a587196"></script>
   <script>
     (() => {
       const key = "fishDuelDeviceAudio";
@@ -141,8 +159,8 @@
     })();
   </script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-d843f90a22da26aa.pck":22834720,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-d843f90a22da26aa.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-c0944f9e97ef0193.pck":22835360,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-c0944f9e97ef0193.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script>
