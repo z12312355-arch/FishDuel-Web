@@ -10,7 +10,7 @@
     let lastTankFrame = -Infinity;
     window.fishDuelScheduleFrame = function schedule(run, loop) {
       loop.requestAnimationFrame(function frame(time) {
-        if (window.fishDuelTankActive && Number.isFinite(time)) {
+        if ((window.fishDuelTankActive || window.fishDuelCompetitionActive) && Number.isFinite(time)) {
           if (time - lastTankFrame < 1000 / 30 - 1) {
             loop.requestAnimationFrame(frame);
             return;
@@ -159,8 +159,8 @@
     })();
   </script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-c0944f9e97ef0193.pck":22835360,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-c0944f9e97ef0193.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-2ceebf1e0f744f45.pck":22835696,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-2ceebf1e0f744f45.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script>
