@@ -69,9 +69,23 @@
     }
     [hidden] { display: none !important; }
     #entry #entry-gear { position: absolute; z-index: 3; top: 8px; right: 8px; width: 48px; height: 48px; padding: 0; font-size: 24px; }
-    #entry-audio { position: absolute; z-index: 2; inset: 0; background: #101c2b; padding: 16px; overflow-y: auto; }
-    #entry-audio label { display: flex; align-items: center; gap: 12px; min-height: 48px; }
-    #entry-audio input[type=range] { flex: 1; }
+    #entry-audio { position:absolute; z-index:2; inset:0; display:grid; grid-template-rows:auto minmax(0,1fr); overflow:hidden; background:#101c2b; color-scheme:dark; accent-color:#65d2bf; }
+    #entry-audio header { padding:8px 68px 8px 16px; min-height:64px; display:flex; align-items:center; }
+    .entry-settings-scroll { overflow:auto; padding:8px 16px 16px; }
+    .entry-options { max-width:28rem; margin:0 auto; }
+    #entry-audio h2 { margin:0; overflow-wrap:anywhere; }
+    .entry-group { background:#182e3b; border:1px solid #324d59; border-radius:12px; padding:0 16px; margin-bottom:14px; }
+    #entry-audio label { display:grid; grid-template-columns:1fr auto; align-items:center; min-height:54px; gap:4px 12px; }
+    #entry-audio label + label { border-top:1px solid #304954; }
+    #entry-audio select { font:inherit; color:inherit; background:#10232e; border:1px solid #52717a; border-radius:6px; padding:6px; min-height:44px; }
+    #entry-muted { width:22px; height:22px; margin:0; }
+    #entry-audio .volume { padding-top:10px; row-gap:0; }
+    #entry-audio output { color:#8cddcf; font-variant-numeric:tabular-nums; }
+    #entry-audio input[type=range] { grid-column:1 / -1; width:100%; margin:0; height:44px; }
+    #entry #entry-back { border-radius:8px; }
+    #entry #entry-language { position: absolute; top: 8px; left: 8px; width: auto; z-index: 2; }
+    html[lang=en] .brand { display:block; font-size:clamp(24px,6vw,40px); letter-spacing:.05em; color:#f5e8ce; }
+    html[lang=en] h1 img { width: min(48%, 125px); margin: auto; }
   </style>
   <style>
     #social-panel { width:min(36rem,calc(100% - 16px)); max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px); background:#101c2b; color:#f5f0e6; border:1px solid #415c70; border-radius:14px; padding:0; }
@@ -112,13 +126,16 @@
       <span class="version">v0.1.1</span>
       <button type="button" id="entry-gear" aria-label="設定" aria-expanded="false" aria-controls="entry-audio"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M13 3h6l1 4 3 2 4-1 3 5-3 3v2l3 3-3 5-4-1-3 2-1 3h-6l-1-3-3-2-4 1-3-5 3-3v-2l-3-3 3-5 4 1 3-2z"/><circle cx="16" cy="16" r="5"/></svg></button>
       <section id="entry-audio" hidden aria-label="設定">
-        <h2>設定</h2>
-        <label><input id="entry-muted" type="checkbox">全部靜音</label>
-        <label>總音量<input type="range" id="master_volume" min="0" max="100" value="80"></label>
-        <label>背景音樂<input type="range" id="music_volume" min="0" max="100" value="65"></label>
-        <label>音效<input type="range" id="sfx_volume" min="0" max="100" value="85"></label>
-        <button type="button" id="entry-back">返回</button>
+        <header><h2>設定</h2></header>
+        <div class="entry-settings-scroll"><div class="entry-options"><div class="entry-group">
+        <label>語言 <select id="entry-language-select"><option value="zh_TW">繁體中文</option><option value="en">English</option></select></label>
+        </div><div class="entry-group"><label>全部靜音<input id="entry-muted" type="checkbox"></label>
+        <label class="volume" for="master_volume"><span>總音量</span><output aria-hidden="true">80%</output><input type="range" id="master_volume" min="0" max="100" value="80"></label>
+        <label class="volume" for="music_volume"><span>背景音樂</span><output aria-hidden="true">65%</output><input type="range" id="music_volume" min="0" max="100" value="65"></label>
+        <label class="volume" for="sfx_volume"><span>音效</span><output aria-hidden="true">85%</output><input type="range" id="sfx_volume" min="0" max="100" value="85"></label>
+        </div><button type="button" id="entry-back">返回</button></div></div>
       </section>
+      <button id="entry-language" type="button" aria-label="Language / 語言">English</button>
       <div id="entry-content">
       <div class="poster" aria-hidden="true"></div>
       <div class="menu">
@@ -144,6 +161,108 @@
     </div>
   </main>
   <aside id="save-state" role="status" hidden></aside>
+  <script>
+    (() => {
+      const english = {
+        "立即試玩": "Play as Guest",
+        "切換帳號": "Switch Account",
+        "設定": "Settings",
+        "語言": "Language",
+        "全部靜音": "Mute All",
+        "總音量": "Master Volume",
+        "背景音樂": "Music",
+        "音效": "Sound Effects",
+        "返回": "Back",
+        "進入遊戲": "Enter Game",
+        "使用 Google 登入": "Sign in with Google",
+        "轉移試玩進度": "Import Guest Progress",
+        "略過轉移": "Skip Import",
+        "切換 Google 帳號": "Switch Google Account",
+        "重新載入": "Reload",
+        "正在連接遊戲服務…": "Connecting…",
+        "試玩進度只存在此瀏覽器。清除瀏覽器資料可能遺失進度。": "Guest progress is saved in this browser. Clearing browser data may erase it.",
+        "無法開啟 Google 登入，請再試一次。": "Couldn't open Google sign-in. Try again.",
+        "試玩已在另一個分頁開啟，請先關閉該分頁。": "Your guest game is open in another tab. Close it to continue.",
+        "上次的轉移尚待確認。請使用當時的 Google 帳號登入。": "Your last import is pending. Sign in with the same Google account.",
+        "無法開啟 Google 登入，試玩進度仍保存在此瀏覽器。": "Couldn't open Google sign-in. Your guest progress is still here.",
+        "無法寫入瀏覽器，請先確認瀏覽器的儲存空間和設定。": "Couldn't save. Check browser storage and permissions.",
+        "無法讀寫這個瀏覽器的試玩存檔。": "Couldn't access guest progress in this browser.",
+        "使用 Google 登入後即可接受好友挑戰。": "Sign in with Google to accept this challenge.",
+        "登入連結已失效，請重新使用 Google 登入。": "This sign-in link expired. Sign in with Google again.",
+        "繼續試玩，或綁定 Google 以便跨裝置找回好友。": "Continue as a guest, or link Google to keep your friends across devices.",
+        "請使用 Google 帳號登入遊戲。": "Sign in with Google to continue.",
+        "無法切換帳號，請稍後再試。": "Couldn't switch accounts. Try again.",
+        "進入遊戲後可查看好友挑戰。": "Enter the game to see your friend's challenge.",
+        "正在讀取遊戲進度…": "Loading your progress…",
+        "這個帳號已在另一個分頁開啟。關閉該分頁後再重新載入。": "Your game is open in another tab. Close it, then reload.",
+        "繼續遊戲": "Continue",
+        "請先關閉正在試玩的分頁，再重新載入以轉移進度。": "Close your guest game tab, then reload to import progress.",
+        "此帳號已有進度。試玩進度會留在此瀏覽器。": "This account already has a save. Your guest progress will stay in this browser.",
+        "這份試玩進度無法轉移至目前帳號，仍保存在此瀏覽器。": "This guest save can't be imported into this account. It's still in this browser.",
+        "這個 Google 帳號還沒有存檔。要轉移此瀏覽器的試玩進度嗎？": "This Google account has no save yet. Import your guest progress?",
+        "另一台裝置已更新進度。": "Progress was updated on another device.",
+        "載入雲端進度": "Load Cloud Save",
+        "進度暫存在這個瀏覽器，稍後會重試同步。": "Progress is saved here. Sync will retry shortly.",
+        "登出失敗，請再試一次。": "Couldn't sign out. Try again.",
+        "此瀏覽器空間不足，無法保存進度。": "Browser storage is full. Couldn't save progress.",
+        "試玩存檔無法讀取，請重新載入並略過轉移。": "Couldn't read the guest save. Reload and skip import.",
+        "帳號已有雲端進度，試玩進度已留在此瀏覽器。請重新載入。": "This account has a cloud save. Your guest save is still here. Please reload.",
+        "暫時無法確認進度轉移。試玩存檔已保留，請重新載入。": "Couldn't confirm the import. Guest progress was kept. Please reload.",
+        "請先處理尚未同步的進度。": "Finish syncing before continuing.",
+        "上次釣魚等待同步，請重新載入。": "Your last catch is waiting to sync. Please reload.",
+        "正在載入遊戲…": "Loading game…",
+        "無法啟動遊戲，請重新載入。": "Couldn't start the game. Please reload.",
+        "暫時無法連接登入服務，仍可在此瀏覽器試玩。": "Sign-in is unavailable. You can still play as a guest.",
+        "無法讀取雲端存檔，請重新載入。": "Couldn't read your cloud save. Please reload."
+};
+      const key = "fishDuelLanguage";
+      const entry = document.getElementById("entry");
+      const toggle = document.getElementById("entry-language");
+      let locale;
+      try { locale = localStorage.getItem(key); } catch {}
+      if (!["en", "zh_TW"].includes(locale)) {
+        locale = /^zh(?:-|$)/i.test(navigator.language) ? "zh_TW" : "en";
+      }
+      const translated = source => locale === "en" ? (english[source] ?? source) : source;
+      const labels = [];
+      const walker = document.createTreeWalker(entry, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        const source = node.textContent.trim();
+        if (english[source]) labels.push({node, source});
+      }
+      const dynamic = new Map();
+      function render() {
+        document.documentElement.lang = locale === "en" ? "en" : "zh-Hant";
+        document.title = locale === "en" ? "My Fish King" : "我的魚最強 · My Fish King";
+        toggle.textContent = locale === "en" ? "繁體中文" : "English";
+        document.getElementById("entry-language-select").value = locale;
+        for (const {node, source} of labels) node.textContent = translated(source);
+        for (const [element, source] of dynamic) {
+          if (element.isConnected) element.textContent = translated(source);
+          else dynamic.delete(element);
+        }
+        for (const id of ["entry-audio", "entry-gear"]) {
+          document.getElementById(id).setAttribute("aria-label", translated("設定"));
+        }
+      }
+      window.fishDuelLanguage = {
+        read: () => locale,
+        write(value) {
+          locale = value === "en" ? "en" : "zh_TW";
+          try { localStorage.setItem(key, locale); } catch {}
+          render();
+        },
+        setText(element, source) {
+          dynamic.set(element, source);
+          element.textContent = translated(source);
+        }
+      };
+      document.getElementById("entry-language-select").onchange = event => window.fishDuelLanguage.write(event.target.value);
+      toggle.onclick = () => window.fishDuelLanguage.write(locale === "en" ? "zh_TW" : "en");
+      render();
+    })();
+  </script>
   <script src="index.js?v=bca316382a587196"></script>
   <script>
     (() => {
@@ -167,15 +286,19 @@
       function toggle() {
         panel.hidden = !panel.hidden;
         menu.inert = !panel.hidden;
+        document.getElementById("entry-language").hidden = !panel.hidden;
         gear.setAttribute("aria-expanded", String(!panel.hidden));
         if (panel.hidden) { gear.focus(); return; }
         if (stored) {
           mute.checked = stored.audio_muted === true;
           for (const slider of sliders) slider.value = Math.round(stored[slider.id] * 100);
         }
+        for (const slider of sliders) slider.previousElementSibling.value = slider.value + "%";
         mute.focus();
       }
-      panel.addEventListener("input", () => {
+      panel.addEventListener("input", event => {
+        if (event.target.id === "entry-language-select") return;
+        if (event.target.type === "range") event.target.previousElementSibling.value = event.target.value + "%";
         const values = { audio_muted: mute.checked };
         for (const slider of sliders) values[slider.id] = Number(slider.value) / 100;
         window.fishDuelEntryAudio.write(JSON.stringify(values));
@@ -188,8 +311,8 @@
     })();
   </script>
   <script>
-    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-81c3958eb96a763d.pck":23004952,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-    const pack = "fishduel-81c3958eb96a763d.pck";
+    window.fishDuelEngineConfig = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"fishduel-15563b58695d33cd.pck":23183284,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+    const pack = "fishduel-15563b58695d33cd.pck";
     if (pack.endsWith(".pck")) window.fishDuelEngineConfig.mainPack = pack;
   </script>
   <script>
@@ -403,8 +526,8 @@
     <nav aria-label="好友功能" hidden></nav>
     <output aria-live="polite"></output><div class="social-content"></div>
   </dialog>
-  <script src="./fishduel-social-652c521584038d13.js"></script>
-  <script type="module" src="./fishduel-cloud-a0252f39432a1d9b.js"></script>
+  <script src="./fishduel-social-b6f8ca857c5891fc.js"></script>
+  <script type="module" src="./fishduel-cloud-092977485e1123a8.js"></script>
 </body>
 </html>
 

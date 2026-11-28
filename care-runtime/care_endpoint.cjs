@@ -30,7 +30,7 @@ module.exports = async function settle(req,res) {
     const secret = process.env.CARE_REFEREE_SECRET;
     if (!await verify(secret,"request",body,req.headers["x-care-signature"])) return res.status(403).end();
     const {nonce,time,job} = JSON.parse(body);
-    if (!Number.isSafeInteger(time) || Math.abs(Date.now()-time)>60000 || !["cup","inspect","rank_verify","rank_battle"].includes(job.action)) return res.status(403).end();
+    if (!Number.isSafeInteger(time) || Math.abs(Date.now()-time)>60000 || !["cup","inspect","rank_verify","rank_battle","breed_parent","breed_child"].includes(job.action)) return res.status(403).end();
     const result = await calculate(job,await getRuntime());
     const reply = JSON.stringify({nonce,result});
     res.setHeader("x-care-signature",await sign(secret,"result",reply));
