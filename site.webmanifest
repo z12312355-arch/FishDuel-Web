@@ -1,0 +1,11 @@
+{
+  "id": "./",
+  "name": "我的魚最強 · My Fish King",
+  "short_name": "我的魚最強",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "display": "browser",
+  "icons": [
+    {"src": "./index.icon.png?v=92273f45dfc204fa", "sizes": "512x512", "type": "image/png"}
+  ]
+}
